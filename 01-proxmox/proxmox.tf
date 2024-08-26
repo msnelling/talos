@@ -13,18 +13,20 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
   datastore_id            = var.proxmox_iso_datastore
   node_name               = "pve"
   file_name               = "talos-${var.talos_version}-nocloud-amd64-secureboot.img"
-  url                     = "https://factory.talos.dev/image/${var.talos_schematic}/${var.talos_version}/nocloud-amd64-secureboot.raw.gz"
+  url                     = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/nocloud-amd64.raw.gz"
   decompression_algorithm = "gz"
   overwrite               = false
 }
 
 resource "proxmox_virtual_environment_vm" "talos_cp1" {
-  name        = "talos-cp1"
-  description = "Managed by Terraform"
-  tags        = ["terraform", "talos"]
-  node_name   = "pve"
-  on_boot     = true
-  bios        = "ovmf"
+  name            = "talos-cp1"
+  description     = "Managed by Terraform"
+  tags            = ["terraform", "talos"]
+  node_name       = "pve"
+  on_boot         = true
+  stop_on_destroy = true
+  bios            = "ovmf"
+  machine         = "q35"
 
   cpu {
     cores = 2
@@ -35,12 +37,25 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
     dedicated = 2048
   }
 
+  vga {
+    type = "qxl"
+  }
+
   agent {
     enabled = true
   }
 
   network_device {
     bridge = "vmbr0"
+  }
+
+  efi_disk {
+    datastore_id = var.proxmox_vm_datastore
+    type         = "4m"
+  }
+
+  tpm_state {
+    version = "v2.0"
   }
 
   disk {
@@ -52,11 +67,7 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
   }
 
   operating_system {
-    type = "l26" # Linux Kernel 2.6 - 5.X.
-  }
-
-  tpm_state {
-    version = "v2.0"
+    type = "l26"
   }
 
   initialization {
@@ -74,13 +85,15 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
 }
 
 resource "proxmox_virtual_environment_vm" "talos_worker1" {
-  depends_on  = [proxmox_virtual_environment_vm.talos_cp1]
-  name        = "talos-worker1"
-  description = "Managed by Terraform"
-  tags        = ["terraform", "talos"]
-  node_name   = "pve"
-  on_boot     = true
-  bios        = "ovmf"
+  depends_on      = [proxmox_virtual_environment_vm.talos_cp1]
+  name            = "talos-worker1"
+  description     = "Managed by Terraform"
+  tags            = ["terraform", "talos"]
+  node_name       = "pve"
+  on_boot         = true
+  stop_on_destroy = true
+  bios            = "ovmf"
+  machine         = "q35"
 
   cpu {
     cores = 4
@@ -91,12 +104,25 @@ resource "proxmox_virtual_environment_vm" "talos_worker1" {
     dedicated = 2048
   }
 
+  vga {
+    type = "qxl"
+  }
+
   agent {
     enabled = true
   }
 
   network_device {
     bridge = "vmbr0"
+  }
+
+  efi_disk {
+    datastore_id = var.proxmox_vm_datastore
+    type         = "4m"
+  }
+
+  tpm_state {
+    version = "v2.0"
   }
 
   disk {
@@ -108,11 +134,7 @@ resource "proxmox_virtual_environment_vm" "talos_worker1" {
   }
 
   operating_system {
-    type = "l26" # Linux Kernel 2.6 - 5.X.
-  }
-
-  tpm_state {
-    version = "v2.0"
+    type = "l26"
   }
 
   initialization {
