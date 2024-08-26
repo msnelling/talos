@@ -12,7 +12,7 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
   content_type            = "iso"
   datastore_id            = var.proxmox_iso_datastore
   node_name               = "pve"
-  file_name               = "talos-${var.talos_version}-nocloud-amd64-secureboot.img"
+  file_name               = "talos-${var.talos_version}-nocloud-amd64.img"
   url                     = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/nocloud-amd64.raw.gz"
   decompression_algorithm = "gz"
   overwrite               = false
@@ -21,7 +21,7 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
 resource "proxmox_virtual_environment_vm" "talos_cp1" {
   name            = "talos-cp1"
   description     = "Managed by Terraform"
-  tags            = ["terraform", "talos"]
+  tags            = sort(["terraform", "talos"])
   node_name       = "pve"
   on_boot         = true
   stop_on_destroy = true
@@ -77,9 +77,6 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
         address = "${var.talos_cp1_ip_addr}/24"
         gateway = var.default_gateway
       }
-      ipv6 {
-        address = "dhcp"
-      }
     }
   }
 }
@@ -88,7 +85,7 @@ resource "proxmox_virtual_environment_vm" "talos_worker1" {
   depends_on      = [proxmox_virtual_environment_vm.talos_cp1]
   name            = "talos-worker1"
   description     = "Managed by Terraform"
-  tags            = ["terraform", "talos"]
+  tags            = sort(["terraform", "talos"])
   node_name       = "pve"
   on_boot         = true
   stop_on_destroy = true
@@ -144,9 +141,6 @@ resource "proxmox_virtual_environment_vm" "talos_worker1" {
         address = "${var.talos_worker1_ip_addr}/24"
         gateway = var.default_gateway
       }
-      ipv6 {
-        address = "dhcp"
-      }
-    }
+     }
   }
 }
