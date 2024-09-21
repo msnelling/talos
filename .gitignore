@@ -7,7 +7,3 @@
 
 # Other junk
 .DS_Store
-
-# CLI config files
-**/talosconfig
-**/kubeconfig

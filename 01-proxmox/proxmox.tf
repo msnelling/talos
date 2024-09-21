@@ -18,23 +18,25 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
   overwrite               = false
 }
 
-resource "proxmox_virtual_environment_vm" "talos_cp1" {
-  name            = "talos-cp1"
+resource "proxmox_virtual_environment_vm" "node" {
+  for_each = local.nodes
+
+  name            = each.value.name
   description     = "Managed by Terraform"
-  tags            = sort(["terraform", "talos"])
-  node_name       = "pve"
+  node_name       = each.value.node
   on_boot         = true
   stop_on_destroy = true
   bios            = "ovmf"
   machine         = "q35"
+  tags            = sort(["terraform", "talos"])
 
   cpu {
-    cores = 2
+    cores = each.value.cpu_cores
     type  = "x86-64-v2-AES"
   }
 
   memory {
-    dedicated = 2048
+    dedicated = each.value.memory_mb
   }
 
   vga {
@@ -46,7 +48,7 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
   }
 
   network_device {
-    bridge = "vmbr0"
+    bridge = var.proxmox_network
   }
 
   efi_disk {
@@ -63,7 +65,7 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
     file_id      = proxmox_virtual_environment_download_file.talos_nocloud_image.id
     file_format  = "raw"
     interface    = "virtio0"
-    size         = 20
+    size         = each.value.disk_gb
   }
 
   operating_system {
@@ -74,73 +76,12 @@ resource "proxmox_virtual_environment_vm" "talos_cp1" {
     datastore_id = var.proxmox_vm_datastore
     ip_config {
       ipv4 {
-        address = "${var.talos_cp1_ip_addr}/24"
-        gateway = var.default_gateway
+        /*
+        address = each.value.address_cidrv4
+        gateway = each.value.gateway_ipv4
+        */
+        address = "dhcp"
       }
     }
-  }
-}
-
-resource "proxmox_virtual_environment_vm" "talos_worker1" {
-  depends_on      = [proxmox_virtual_environment_vm.talos_cp1]
-  name            = "talos-worker1"
-  description     = "Managed by Terraform"
-  tags            = sort(["terraform", "talos"])
-  node_name       = "pve"
-  on_boot         = true
-  stop_on_destroy = true
-  bios            = "ovmf"
-  machine         = "q35"
-
-  cpu {
-    cores = 4
-    type  = "x86-64-v2-AES"
-  }
-
-  memory {
-    dedicated = 2048
-  }
-
-  vga {
-    type = "qxl"
-  }
-
-  agent {
-    enabled = true
-  }
-
-  network_device {
-    bridge = "vmbr0"
-  }
-
-  efi_disk {
-    datastore_id = var.proxmox_vm_datastore
-    type         = "4m"
-  }
-
-  tpm_state {
-    version = "v2.0"
-  }
-
-  disk {
-    datastore_id = var.proxmox_vm_datastore
-    file_id      = proxmox_virtual_environment_download_file.talos_nocloud_image.id
-    file_format  = "raw"
-    interface    = "virtio0"
-    size         = 20
-  }
-
-  operating_system {
-    type = "l26"
-  }
-
-  initialization {
-    datastore_id = var.proxmox_vm_datastore
-    ip_config {
-      ipv4 {
-        address = "${var.talos_worker1_ip_addr}/24"
-        gateway = var.default_gateway
-      }
-     }
   }
 }

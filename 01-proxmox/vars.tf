@@ -3,6 +3,11 @@ variable "proxmox_endpoint" {
   default = "https://pve.xmple.io:8006/"
 }
 
+variable "proxmox_default_node" {
+  type    = string
+  default = "pve"
+}
+
 variable "proxmox_iso_datastore" {
   type    = string
   default = "local"
@@ -13,14 +18,32 @@ variable "proxmox_vm_datastore" {
   default = "local-lvm"
 }
 
-variable "cluster_name" {
+variable "proxmox_network" {
   type    = string
-  default = "homelab"
+  default = "vmbr0"
 }
 
-variable "default_gateway" {
+variable "proxmox_virtual_machines" {
+  type = map(object({
+    is_controller = bool
+    node_name     = optional(string)
+    cpu_cores     = number
+    memory_mb     = number
+    disk_gb       = number
+    address_ipv4  = string
+    gateway_ipv4  = optional(string)
+    labels        = map(string)
+  }))
+}
+
+variable "network_default_gateway_v4" {
   type    = string
   default = "10.1.1.1"
+}
+
+variable "network_cidr_v4" {
+  type    = string
+  default = "10.1.1.0/24"
 }
 
 variable "talos_schematic" {
@@ -31,14 +54,4 @@ variable "talos_schematic" {
 variable "talos_version" {
   type    = string
   default = "v1.7.6"
-}
-
-variable "talos_cp1_ip_addr" {
-  type    = string
-  default = "10.1.1.248"
-}
-
-variable "talos_worker1_ip_addr" {
-  type    = string
-  default = "10.1.1.249"
 }

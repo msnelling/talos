@@ -22,7 +22,18 @@ resource "tfe_workspace" "proxmox" {
   project_id   = tfe_project.this.id
 }
 
+resource "tfe_workspace" "talos" {
+  name         = "talos"
+  organization = var.organization
+  project_id   = tfe_project.this.id
+}
+
 resource "tfe_workspace_settings" "proxmox_settings" {
   workspace_id   = tfe_workspace.proxmox.id
+  execution_mode = "local"
+}
+
+resource "tfe_workspace_settings" "talos_settings" {
+  workspace_id   = tfe_workspace.talos.id
   execution_mode = "local"
 }
