@@ -21,3 +21,17 @@ terraform {
     }
   }
 }
+
+provider "proxmox" {
+  endpoint  = var.proxmox_endpoint
+  api_token = "${local.vault_secret_proxmox_username}!${local.vault_secret_proxmox_token_name}=${local.vault_secret_proxmox_token}"
+
+  ssh {
+    agent    = true
+    username = "root"
+  }
+}
+
+provider "talos" {}
+
+provider "vault" {}

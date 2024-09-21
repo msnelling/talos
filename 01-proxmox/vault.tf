@@ -1,6 +1,3 @@
-provider "vault" {
-}
-
 data "vault_generic_secret" "proxmox_provider" {
   path = "secret/proxmox/terraform-provider"
 }
