@@ -3,7 +3,7 @@ terraform {
     organization = "xmple"
 
     workspaces {
-      name = "proxmox"
+      name = "talos-proxmox"
     }
   }
 

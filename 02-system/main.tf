@@ -3,7 +3,7 @@ terraform {
     organization = "xmple"
 
     workspaces {
-      name = "talos"
+      name = "talos-system"
     }
   }
 
@@ -20,7 +20,7 @@ terraform {
 
 data "tfe_outputs" "proxmox" {
   organization = "xmple"
-  workspace    = "proxmox"
+  workspace    = "talos-proxmox"
 }
 
 provider "talos" {}
