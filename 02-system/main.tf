@@ -18,7 +18,7 @@ terraform {
   }
 }
 
-data "tfe_outputs" "proxmox" {
+data "tfe_outputs" "talos_proxmox" {
   organization = "xmple"
   workspace    = "talos-proxmox"
 }
