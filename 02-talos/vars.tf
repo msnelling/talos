@@ -22,3 +22,13 @@ variable "cilium_version" {
   type    = string
   default = "1.16.1"
 }
+
+variable "cilium_loadbalancer_ip" {
+  type    = string
+  default = "10.1.1.49"
+}
+
+variable "gateway_api_version" {
+  type    = string
+  default = "1.1.0"
+}

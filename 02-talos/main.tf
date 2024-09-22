@@ -35,7 +35,3 @@ provider "helm" {
     cluster_ca_certificate = talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate
   }
 }
-
-provider "helm" {
-  alias = "template"
-}

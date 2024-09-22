@@ -1,5 +1,5 @@
-ipam:
-  mode: kubernetes
+#ipam:
+#  mode: kubernetes
 
 operator:
   replicas: 1
@@ -15,7 +15,7 @@ ingressController:
   loadbalancerMode: shared
   service:
     annotations:
-      kube-vip.io/loadbalancerIPs: 10.1.1.49
+      kube-vip.io/loadbalancerIPs: ${loadbalancer_ip}
 
 l7Proxy: true
 kubeProxyReplacement: true
