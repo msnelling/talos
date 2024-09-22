@@ -20,7 +20,6 @@ cluster:
     # Cilium Helm values
     - name: cilium-values
       contents: |
-        ---
         apiVersion: v1
         kind: ConfigMap
         metadata:
@@ -33,6 +32,15 @@ cluster:
     - name: cilium-bootstrap
       contents: |
         ${indent(8, cilium_install)}
+    # ArgoCD namespace
+    - name: argocd-namespace
+      contents: |
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: argocd
+          labels:
+            kubernetes.io/metadata.name: argocd
     # Install ArgoCD
     - name: argocd-install
       contents: |

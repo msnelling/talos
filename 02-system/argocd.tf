@@ -5,7 +5,6 @@ data "helm_template" "argocd" {
   chart            = "argo-cd"
   version          = var.argocd_chart_version
   namespace        = "argocd"
-  create_namespace = true
   kube_version     = var.talos_kube_version
   values           = []
 }
