@@ -34,6 +34,6 @@ cluster:
       contents: |
         ${indent(8, cilium_install)}
     # Install ArgoCD
-    - name: argocd-bootstrap
+    - name: argocd-install
       contents: |
         ${indent(8, argocd_install)}
