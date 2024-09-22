@@ -1,7 +1,3 @@
-provider "vault" {
-}
-
-/*
 resource "vault_generic_secret" "kubeconfig" {
   path      = "secret/talos/kubeconfig"
   data_json = <<-EOT
@@ -13,4 +9,3 @@ resource "vault_generic_secret" "kubeconfig" {
   }
   EOT
 }
-*/

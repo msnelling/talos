@@ -1,25 +1,15 @@
-provider "talos" {}
-
 locals {
   common_machine_config = {
     machine = {}
-  }
-  controller_config = {
-    machine = {
-      network = {
-        interfaces = [
-          {
-            interface = "eth0"
-            dhcp      = true
-            vip = {
-              ip = var.talos_controller_vip
-            }
-          }
-        ]
-      }
-    }
     cluster = {
-      allowSchedulingOnControlPlanes = var.talos_schedule_on_controllers
+      network = {
+        cni = {
+          name = "none"
+        }
+      }
+      proxy = {
+        disabled = true
+      }
     }
   }
 }
@@ -34,26 +24,55 @@ data "talos_client_configuration" "this" {
 }
 
 data "talos_machine_configuration" "controller" {
-  cluster_name     = var.talos_cluster_name
-  cluster_endpoint = "https://${var.talos_controller_vip}:6443"
-  machine_type     = "controlplane"
-  machine_secrets  = talos_machine_secrets.this.machine_secrets
-
-  examples = false
-  docs     = false
-
+  cluster_name       = var.talos_cluster_name
+  cluster_endpoint   = "https://${var.talos_controller_vip}:6443"
+  machine_type       = "controlplane"
+  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  kubernetes_version = var.talos_kube_version
+  examples           = false
+  docs               = false
   config_patches = [
     yamlencode(local.common_machine_config),
-    yamlencode(local.controller_config),
+    yamlencode({
+      machine = {
+        network = {
+          interfaces = [
+            {
+              interface = "eth0"
+              dhcp      = true
+              vip = {
+                ip = var.talos_controller_vip
+              }
+            }
+          ]
+        }
+      }
+    }),
+    yamlencode({
+      cluster = {
+        allowSchedulingOnControlPlanes = var.talos_schedule_on_controllers
+        inlineManifests = [
+          {
+            name = "cilium"
+            contents = join("---\n", [
+              "# Source cilium.tf\n${data.helm_template.cilium.manifest}"
+              // Other cilium manifests...
+            ])
+          }
+        ]
+      }
+    }),
   ]
 }
 
 data "talos_machine_configuration" "worker" {
-  cluster_name     = var.talos_cluster_name
-  cluster_endpoint = "https://${var.talos_controller_vip}:6443"
-  machine_type     = "worker"
-  machine_secrets  = talos_machine_secrets.this.machine_secrets
-
+  cluster_name       = var.talos_cluster_name
+  cluster_endpoint   = "https://${var.talos_controller_vip}:6443"
+  machine_type       = "worker"
+  machine_secrets    = talos_machine_secrets.this.machine_secrets
+  kubernetes_version = var.talos_kube_version
+  examples           = false
+  docs               = false
   config_patches = [
     yamlencode(local.common_machine_config),
   ]
@@ -84,14 +103,13 @@ resource "talos_machine_bootstrap" "this" {
   ]
 }
 
-data "talos_cluster_health" "health" {
+data "talos_cluster_health" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
   control_plane_nodes  = local.controller_addresses_ipv4
-  worker_nodes         = local.worker_addresses_ipv4
   endpoints            = local.controller_addresses_ipv4
 
   depends_on = [
-    talos_machine_configuration_apply.controller
+    talos_machine_bootstrap.this,
   ]
 }
 
@@ -101,17 +119,16 @@ resource "talos_cluster_kubeconfig" "this" {
   endpoint             = var.talos_controller_vip
 
   depends_on = [
-    talos_machine_bootstrap.this,
-    data.talos_cluster_health.health
+    data.talos_cluster_health.this
   ]
 }
 
 resource "local_sensitive_file" "talosconfig" {
   content  = data.talos_client_configuration.this.talos_config
-  filename = "output/talosconfig"
+  filename = "${path.module}/output/talosconfig"
 }
 
 resource "local_sensitive_file" "kubeconfig" {
   content  = talos_cluster_kubeconfig.this.kubeconfig_raw
-  filename = "output/kubeconfig"
+  filename = "${path.module}/output/kubeconfig"
 }

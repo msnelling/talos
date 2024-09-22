@@ -12,3 +12,13 @@ variable "talos_schedule_on_controllers" {
   type    = bool
   default = false
 }
+
+variable "talos_kube_version" {
+  type    = string
+  default = "1.31.0"
+}
+
+variable "cilium_version" {
+  type    = string
+  default = "1.16.1"
+}
