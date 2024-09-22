@@ -16,6 +16,8 @@ locals {
     cilium_install = templatefile("${path.module}/templates/cilium_install.yaml.tpl", {
       cilium_version = var.cilium_version
     })
+
+    argocd_install = data.helm_template.argocd.manifest
   })
 }
 
