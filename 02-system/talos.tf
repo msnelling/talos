@@ -1,13 +1,15 @@
 locals {
-  common_machine_config = templatefile("${path.module}/templates/common_config.yaml.tpl", {
-    cluster_name = var.talos_cluster_name
-    node_name    = "talos" // TODO: Get this each talos node
-  })
+  common_machine_configs = {
+    for name, node in local.all_nodes : name => templatefile("${path.module}/templates/common_config.yaml.tpl", {
+      cluster_name = var.talos_cluster_name
+      node_name    = lower(name)
+  }) }
 
   controller_machine_config = templatefile("${path.module}/templates/controller_config.yaml.tpl", {
     vip                     = var.talos_controller_vip
     schedule_on_controllers = var.talos_schedule_on_controllers
     gateway_api_version     = var.gateway_api_version
+    argocd_release          = var.argocd_release
 
     cilium_values = templatefile("${path.module}/templates/cilium_values.yaml.tpl", {
       loadbalancer_ip = var.cilium_loadbalancer_ip
@@ -17,7 +19,13 @@ locals {
       cilium_version = var.cilium_version
     })
 
-    argocd_install = data.helm_template.argocd.manifest
+    argocd_install = templatefile("${path.module}/templates/argocd_install.yaml.tpl", {
+      argocd_release = var.argocd_release
+    })
+
+    argocd_bootstrap = templatefile("${path.module}/templates/argocd_bootstrap.yaml.tpl", {
+      // TBD
+    })
   })
 }
 
@@ -26,56 +34,56 @@ resource "talos_machine_secrets" "this" {}
 data "talos_client_configuration" "this" {
   cluster_name         = var.talos_cluster_name
   client_configuration = talos_machine_secrets.this.client_configuration
-  nodes                = local.controller_addresses_ipv4
-  endpoints            = local.controller_addresses_ipv4
+  nodes                = [for name, node in local.controller_nodes : node.address_ipv4]
+  endpoints            = [for name, node in local.controller_nodes : node.address_ipv4]
 }
 
 data "talos_machine_configuration" "controller" {
+  for_each           = local.controller_nodes
   cluster_name       = var.talos_cluster_name
-  cluster_endpoint   = "https://${var.talos_controller_vip}:6443"
+  cluster_endpoint   = "https://${each.value.address_ipv4}:6443"
   machine_type       = "controlplane"
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.talos_kube_version
   examples           = false
   docs               = false
   config_patches = [
-    local.common_machine_config,
+    local.common_machine_configs[each.key],
     local.controller_machine_config,
   ]
 }
 
 data "talos_machine_configuration" "worker" {
+  for_each           = local.worker_nodes
   cluster_name       = var.talos_cluster_name
-  cluster_endpoint   = "https://${var.talos_controller_vip}:6443"
+  cluster_endpoint   = "https://${each.value.address_ipv4}:6443"
   machine_type       = "worker"
   machine_secrets    = talos_machine_secrets.this.machine_secrets
   kubernetes_version = var.talos_kube_version
   examples           = false
   docs               = false
   config_patches = [
-    local.common_machine_config,
+    local.common_machine_configs[each.key],
   ]
 }
 
 resource "talos_machine_configuration_apply" "controller" {
-  for_each = toset(local.controller_addresses_ipv4)
-
+  for_each                    = local.controller_nodes
   client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.controller.machine_configuration
-  node                        = each.value
+  machine_configuration_input = data.talos_machine_configuration.controller[each.key].machine_configuration
+  node                        = each.value.address_ipv4
 }
 
 resource "talos_machine_configuration_apply" "worker" {
-  for_each = toset(local.worker_addresses_ipv4)
-
+  for_each                    = local.worker_nodes
   client_configuration        = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
-  node                        = each.value
+  machine_configuration_input = data.talos_machine_configuration.worker[each.key].machine_configuration
+  node                        = each.value.address_ipv4
 }
 
 resource "talos_machine_bootstrap" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
-  node                 = local.controller_addresses_ipv4[0]
+  node                 = local.bootstrap_address_ipv4
 
   depends_on = [
     talos_machine_configuration_apply.controller
@@ -97,8 +105,7 @@ data "talos_cluster_health" "this" {
 
 resource "talos_cluster_kubeconfig" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
-  node                 = local.controller_addresses_ipv4[0]
-  endpoint             = var.talos_controller_vip
+  node                 = local.bootstrap_address_ipv4
 
   depends_on = [
     talos_machine_bootstrap.this,

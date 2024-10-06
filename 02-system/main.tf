@@ -13,7 +13,7 @@ terraform {
     }
     talos = {
       source  = "siderolabs/talos"
-      version = "0.6.0-beta.0"
+      version = "~> 0.6.0"
     }
   }
 }
@@ -28,21 +28,8 @@ provider "talos" {}
 provider "vault" {}
 
 provider "kubernetes" {
-    host                   = talos_cluster_kubeconfig.this.kubernetes_client_configuration.host
-    client_certificate     = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_certificate)
-    client_key             = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key)
-    cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = talos_cluster_kubeconfig.this.kubernetes_client_configuration.host
-    client_certificate     = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_certificate)
-    client_key             = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key)
-    cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate)
-  }
-}
-
-provider "helm" {
-  alias = "template"
+  host                   = talos_cluster_kubeconfig.this.kubernetes_client_configuration.host
+  client_certificate     = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_certificate)
+  client_key             = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.client_key)
+  cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.this.kubernetes_client_configuration.ca_certificate)
 }

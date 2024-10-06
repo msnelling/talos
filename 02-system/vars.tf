@@ -20,7 +20,7 @@ variable "talos_kube_version" {
 
 variable "cilium_version" {
   type    = string
-  default = "1.16.1"
+  default = "1.16.2"
 }
 
 variable "cilium_loadbalancer_ip" {
@@ -33,7 +33,7 @@ variable "gateway_api_version" {
   default = "1.1.0"
 }
 
-variable "argocd_chart_version" {
+variable "argocd_release" {
   type    = string
-  default = "7.6.1"
+  default = "2.12"
 }

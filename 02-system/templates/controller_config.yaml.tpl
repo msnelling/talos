@@ -32,16 +32,25 @@ cluster:
     - name: cilium-bootstrap
       contents: |
         ${indent(8, cilium_install)}
-    # ArgoCD namespace
-    - name: argocd-namespace
+    # Cilium IP pools
+    - name: cilium-ip-pools
       contents: |
-        apiVersion: v1
-        kind: Namespace
+        apiVersion: "cilium.io/v2alpha1"
+        kind: CiliumLoadBalancerIPPool
         metadata:
-          name: argocd
-          labels:
-            kubernetes.io/metadata.name: argocd
+          name: traefik
+        spec:
+          blocks:
+            - start: "10.1.1.48"
+          serviceSelector:
+            matchLabels:
+              io.kubernetes.service.namespace: traefik
+              io.kubernetes.service.name: traefik
     # Install ArgoCD
     - name: argocd-install
       contents: |
         ${indent(8, argocd_install)}
+    # ArgoCD bootstrap project
+    - name: argocd-bootstrap
+      contents: |
+        ${indent(8, argocd_bootstrap)}

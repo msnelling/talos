@@ -25,14 +25,14 @@ variable "proxmox_network" {
 
 variable "proxmox_virtual_machines" {
   type = map(object({
-    is_controller = bool
-    node_name     = optional(string)
+    pve_node      = optional(string)
     cpu_cores     = number
     memory_mb     = number
     disk_gb       = number
-    address_ipv4  = string
+    address_ipv4  = optional(string, "dhcp")
     gateway_ipv4  = optional(string)
-    labels        = map(string)
+    labels        = optional(map(string), {})
+    is_controller = bool
   }))
 }
 
@@ -46,12 +46,7 @@ variable "network_cidr_v4" {
   default = "10.1.1.0/24"
 }
 
-variable "talos_schematic" {
-  type    = string
-  default = "88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b"
-}
-
 variable "talos_version" {
   type    = string
-  default = "v1.7.6"
+  default = "v1.8.0"
 }

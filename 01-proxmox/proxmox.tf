@@ -9,16 +9,15 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
 }
 
 resource "proxmox_virtual_environment_vm" "node" {
-  for_each = local.nodes
-
-  name            = each.value.name
+  for_each        = var.proxmox_virtual_machines
+  name            = each.key
   description     = "Managed by Terraform"
-  node_name       = each.value.node
-  on_boot         = true
-  stop_on_destroy = true
+  node_name       = coalesce(each.value.pve_node, var.proxmox_default_node)
   bios            = "ovmf"
   machine         = "q35"
-  tags            = sort(["terraform", "talos"])
+  tags            = ["talos", "terraform", each.value.is_controller ? "controller" : "worker"]
+  on_boot         = true
+  stop_on_destroy = true
 
   cpu {
     cores = each.value.cpu_cores
@@ -66,11 +65,8 @@ resource "proxmox_virtual_environment_vm" "node" {
     datastore_id = var.proxmox_vm_datastore
     ip_config {
       ipv4 {
-        /*
-        address = each.value.address_cidrv4
-        gateway = each.value.gateway_ipv4
-        */
-        address = "dhcp"
+        address = each.value.address_ipv4
+        gateway = each.value.address_ipv4 != "dhcp" ? coalesce(each.value.gateway_ipv4, var.network_default_gateway_v4) : null
       }
     }
   }

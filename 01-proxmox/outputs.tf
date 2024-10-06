@@ -1,7 +1,7 @@
-output "controller_addresses_ipv4" {
-  value = local.controller_addresses_ipv4
+output "controller_nodes" {
+  value = terraform_data.controller_nodes.output
 }
 
-output "worker_addresses_ipv4" {
-  value = local.worker_addresses_ipv4
+output "worker_nodes" {
+  value = terraform_data.worker_nodes.output
 }
