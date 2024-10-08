@@ -3,6 +3,14 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: argocd
+#  labels:
+#    pod-security.kubernetes.io/enforce: privileged
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd-install
+  namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -16,20 +24,6 @@ subjects:
   - kind: ServiceAccount
     name: argocd-install
     namespace: kube-system
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: argocd-install
-  namespace: kube-system
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: argocd-cm
-  namespace: argocd
-data:
-  kustomize.buildOptions: --enable-helm
 ---
 apiVersion: batch/v1
 kind: Job

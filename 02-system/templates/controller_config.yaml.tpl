@@ -35,7 +35,20 @@ cluster:
     # Cilium IP pools
     - name: cilium-ip-pools
       contents: |
-        apiVersion: "cilium.io/v2alpha1"
+        ---
+        apiVersion: cilium.io/v2alpha1
+        kind: CiliumLoadBalancerIPPool
+        metadata:
+          name: system
+        spec:
+          blocks:
+            - start: "10.1.1.49"
+          serviceSelector:
+            matchLabels:
+              io.kubernetes.service.namespace: kube-system
+              io.kubernetes.service.name: cilium-ingress
+        ---
+        apiVersion: cilium.io/v2alpha1
         kind: CiliumLoadBalancerIPPool
         metadata:
           name: traefik

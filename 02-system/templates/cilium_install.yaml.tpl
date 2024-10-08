@@ -1,4 +1,10 @@
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cilium-install
+  namespace: kube-system
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -11,12 +17,6 @@ subjects:
   - kind: ServiceAccount
     name: cilium-install
     namespace: kube-system
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cilium-install
-  namespace: kube-system
 ---
 apiVersion: batch/v1
 kind: Job
@@ -76,8 +76,6 @@ spec:
             - cilium
             - install
             - --version=v${cilium_version}
-            - --set
-            - kubeProxyReplacement=true
             - --values
             - /root/app/values.yaml
       volumes:

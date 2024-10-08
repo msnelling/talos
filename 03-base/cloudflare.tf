@@ -23,15 +23,6 @@ resource "vault_generic_secret" "cert_manager_issuer_token" {
   EOT
 }
 
-resource "vault_kubernetes_auth_backend_role" "cloudflare_tunnel" {
-  backend                          = vault_auth_backend.this.path
-  role_name                        = "cloudflare-tunnel"
-  bound_service_account_names      = ["cloudflare-tunnel"]
-  bound_service_account_namespaces = ["cloudflare"]
-  token_ttl                        = 3600
-  token_policies                   = [vault_policy.cloudflare_tunnels.name]
-}
-
 resource "random_bytes" "cloudflare_tunnel_password" {
   length = 64
 }
@@ -43,7 +34,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared" "this" {
 }
 
 resource "vault_generic_secret" "tunnel_token" {
-  path      = "secret/talos/cloudflare/tunnel"
+  path      = "secret/talos/cloudflare/tunnels/system"
   data_json = <<-EOT
     {
       "tunnel-token": "${cloudflare_zero_trust_tunnel_cloudflared.this.tunnel_token}"
@@ -54,8 +45,17 @@ resource "vault_generic_secret" "tunnel_token" {
 resource "vault_policy" "cloudflare_tunnels" {
   name   = "talos-cloudflare-tunnels"
   policy = <<-EOT
-    path "secret/data/talos/cloudflare/tunnel/*" {
+    path "secret/data/talos/cloudflare/tunnels/*" {
       capabilities = ["read"]
     }
   EOT
+}
+
+resource "vault_kubernetes_auth_backend_role" "cloudflare_tunnel" {
+  backend                          = vault_auth_backend.this.path
+  role_name                        = "cloudflare-tunnel"
+  bound_service_account_names      = ["cloudflare-tunnel"]
+  bound_service_account_namespaces = ["cloudflare"]
+  token_ttl                        = 3600
+  token_policies                   = [vault_policy.cloudflare_tunnels.name]
 }
