@@ -1,8 +1,9 @@
 locals {
   common_machine_configs = {
     for name, node in local.all_nodes : name => templatefile("${path.module}/templates/common_config.yaml.tpl", {
-      cluster_name = var.talos_cluster_name
-      node_name    = lower(name)
+      cluster_name   = var.talos_cluster_name
+      node_name      = lower(name)
+      cilium_enabled = var.cilium_enabled
   }) }
 
   controller_machine_config = templatefile("${path.module}/templates/controller_config.yaml.tpl", {
@@ -10,6 +11,7 @@ locals {
     schedule_on_controllers = var.talos_schedule_on_controllers
     gateway_api_version     = var.gateway_api_version
     argocd_release          = var.argocd_release
+    cilium_enabled          = var.cilium_enabled
 
     cilium_values = templatefile("${path.module}/templates/cilium_values.yaml.tpl", {
       loadbalancer_ip = var.cilium_loadbalancer_ip

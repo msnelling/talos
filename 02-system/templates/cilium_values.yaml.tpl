@@ -2,6 +2,7 @@ cluster:
   name: homelab
   id: 1
 
+l7Proxy: true
 kubeProxyReplacement: true
 
 # https://docs.cilium.io/en/stable/network/concepts/ipam/
@@ -52,20 +53,18 @@ k8sClientRateLimit:
 l2announcements:
   enabled: true
 
-#externalIPs:
-#  enabled: true
+externalIPs:
+  enabled: true
 
-#ciliumEndpointSlice:
-#  enabled: true
+ciliumEndpointSlice:
+  enabled: true
 
-#loadBalancer:
+loadBalancer:
   # https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/#maglev-consistent-hashing
-#  algorithm: maglev
+  algorithm: maglev
 
 gatewayAPI:
   enabled: true
-  hostNetwork:
-    enabled: true
 
 operator:
   rollOutPods: true
@@ -80,31 +79,23 @@ operator:
 envoy:
   rollOutPods: true
   securityContext:
-    privileged: false
+    privileged: true
     capabilities:
       keepCapNetBindService: true
-#      envoy:
-#        - NET_ADMIN
-#        - PERFMON
-#        - BPF
+      envoy:
+        - NET_ADMIN
+        - PERFMON
+        - BPF
 #        # Enable NET_BIND_SERVICE capability to use port numbers < 1024, e.g. 80 or 443
 #        - NET_BIND_SERVICE
 
 ingressController:
   enabled: true
-  hostNetwork:
-    enabled: true
+  default: true
   loadbalancerMode: shared
   service:
     annotations:
       lbipam.cilium.io/ips: ${loadbalancer_ip}
-      lbipam.cilium.io/sharing-key: "cilium-lb"
-
-serviceAccounts:
-  cilium:
-    name: cilium
-  operator:
-    name: cilium-operator
 
 hubble:
   enabled: true

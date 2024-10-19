@@ -18,6 +18,11 @@ variable "talos_kube_version" {
   default = "1.31.0"
 }
 
+variable "cilium_enabled" {
+  type    = bool
+  default = true
+}
+
 variable "cilium_version" {
   type    = string
   default = "1.16.3"
