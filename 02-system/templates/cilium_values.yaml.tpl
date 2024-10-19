@@ -1,5 +1,5 @@
 cluster:
-  name: talos
+  name: homelab
   id: 1
 
 kubeProxyReplacement: true
@@ -13,22 +13,26 @@ k8sServiceHost: localhost
 k8sServicePort: 7445
 securityContext:
   capabilities:
-    ciliumAgent: [ CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID ]
-    cleanCiliumState: [ NET_ADMIN, SYS_ADMIN, SYS_RESOURCE ]
+    ciliumAgent: 
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
 cgroup:
   autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
-
-operator:
-  rollOutPods: true
-#  resources:
-#    limits:
-#      cpu: 500m
-#      memory: 256Mi
-#    requests:
-#      cpu: 50m
-#      memory: 128Mi
 
 # Roll out cilium agent pods automatically when ConfigMap is updated.
 rollOutCiliumPods: true
@@ -48,59 +52,59 @@ k8sClientRateLimit:
 l2announcements:
   enabled: true
 
-externalIPs:
-  enabled: true
+#externalIPs:
+#  enabled: true
 
-enableCiliumEndpointSlice: true
+#ciliumEndpointSlice:
+#  enabled: true
 
-loadBalancer:
+#loadBalancer:
   # https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/#maglev-consistent-hashing
-  algorithm: maglev
+#  algorithm: maglev
 
 gatewayAPI:
   enabled: true
+  hostNetwork:
+    enabled: true
+
+operator:
+  rollOutPods: true
+#  resources:
+#    limits:
+#      cpu: 500m
+#      memory: 256Mi
+#    requests:
+#      cpu: 50m
+#      memory: 128Mi
+
 envoy:
+  rollOutPods: true
   securityContext:
+    privileged: false
     capabilities:
       keepCapNetBindService: true
-      envoy:
-        - NET_ADMIN
-        - PERFMON
-        - BPF
-        # Enable NET_BIND_SERVICE capability to use port numbers < 1024, e.g. 80 or 443
-        - NET_BIND_SERVICE
+#      envoy:
+#        - NET_ADMIN
+#        - PERFMON
+#        - BPF
+#        # Enable NET_BIND_SERVICE capability to use port numbers < 1024, e.g. 80 or 443
+#        - NET_BIND_SERVICE
 
 ingressController:
   enabled: true
+  hostNetwork:
+    enabled: true
   loadbalancerMode: shared
   service:
     annotations:
       lbipam.cilium.io/ips: ${loadbalancer_ip}
+      lbipam.cilium.io/sharing-key: "cilium-lb"
 
 serviceAccounts:
   cilium:
     name: cilium
   operator:
     name: cilium-operator
-
-securityContext:
-  capabilities:
-    ciliumAgent: 
-      - CHOWN
-      - KILL
-      - NET_ADMIN
-      - NET_RAW
-      - IPC_LOCK
-      - SYS_ADMIN
-      - SYS_RESOURCE
-      - DAC_OVERRIDE
-      - FOWNER
-      - SETGID
-      - SETUID
-    cleanCiliumState:
-      - NET_ADMIN
-      - SYS_ADMIN
-      - SYS_RESOURCE
 
 hubble:
   enabled: true

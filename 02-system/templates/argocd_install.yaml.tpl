@@ -3,8 +3,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: argocd
-#  labels:
-#    pod-security.kubernetes.io/enforce: privileged
 ---
 apiVersion: v1
 kind: ServiceAccount

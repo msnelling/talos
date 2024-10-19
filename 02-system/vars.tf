@@ -20,7 +20,7 @@ variable "talos_kube_version" {
 
 variable "cilium_version" {
   type    = string
-  default = "1.16.2"
+  default = "1.16.3"
 }
 
 variable "cilium_loadbalancer_ip" {
