@@ -32,7 +32,7 @@ spec:
   source:
     path: 01-bootstrap
     repoURL: https://github.com/msnelling/argocd-bootstrap.git
-    targetRevision: talos
+    targetRevision: HEAD
   destination:
     namespace: argocd
     name: in-cluster
