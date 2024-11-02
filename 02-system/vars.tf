@@ -15,7 +15,7 @@ variable "talos_schedule_on_controllers" {
 
 variable "talos_kube_version" {
   type    = string
-  default = "1.31.0"
+  default = "1.31.2"
 }
 
 variable "cilium_enabled" {
