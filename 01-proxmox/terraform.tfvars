@@ -1,7 +1,7 @@
 proxmox_virtual_machines = {
   "Talos1" = {
     is_controller = true
-    cpu_cores     = 2
+    cpu_cores     = 4
     memory_mb     = 4096
     disk_gb       = 20
   },
