@@ -4,9 +4,14 @@ machine:
       - interface: eth0
         dhcp: true
         vip:
-          ip: ${vip}
+          ip: ${vip_ipv4}
 
 cluster:
+  apiServer:
+    certSANs:
+%{ for san in cert_sans }
+      - ${san}
+%{ endfor }
   allowSchedulingOnControlPlanes: ${schedule_on_controllers}
   extraManifests:
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml

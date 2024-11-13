@@ -14,8 +14,8 @@ machine:
           - bind
           - rshared
           - rw
-%{ if cilium_enabled }
 cluster:
+%{ if cilium_enabled }
   network:
     cni:
       name: none

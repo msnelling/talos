@@ -3,9 +3,14 @@ variable "talos_cluster_name" {
   default = "homelab"
 }
 
-variable "talos_controller_vip" {
+variable "talos_controller_vip_ip" {
   type    = string
   default = "10.1.1.40"
+}
+
+variable "talos_controller_vip_fqdn" {
+  type    = string
+  default = "talos-api.xmple.io"
 }
 
 variable "talos_schedule_on_controllers" {
@@ -40,5 +45,5 @@ variable "gateway_api_version" {
 
 variable "argocd_release" {
   type    = string
-  default = "2.12"
+  default = "2.13"
 }
