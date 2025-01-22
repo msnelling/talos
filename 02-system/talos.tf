@@ -18,6 +18,7 @@ locals {
     vip_ipv4                = var.talos_controller_vip_ip
     cert_sans               = local.cert_sans
     schedule_on_controllers = var.talos_schedule_on_controllers
+    gateway_api_enabled     = var.gateway_api_enabled
     gateway_api_version     = var.gateway_api_version
     argocd_release          = var.argocd_release
     cilium_enabled          = var.cilium_enabled
@@ -125,13 +126,13 @@ resource "talos_cluster_kubeconfig" "this" {
 }
 
 resource "local_sensitive_file" "talosconfig" {
-  content  = data.talos_client_configuration.this.talos_config
+  content = data.talos_client_configuration.this.talos_config
   #filename = "${path.module}/output/talosconfig"
   filename = var.talos_config_file
 }
 
 resource "local_sensitive_file" "kubeconfig" {
-  content  = talos_cluster_kubeconfig.this.kubeconfig_raw
+  content = talos_cluster_kubeconfig.this.kubeconfig_raw
   #filename = "${path.module}/output/kubeconfig"
   filename = var.kubeconfig_file
 }

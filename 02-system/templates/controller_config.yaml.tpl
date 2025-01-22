@@ -13,6 +13,7 @@ cluster:
       - ${san}
 %{ endfor }
   allowSchedulingOnControlPlanes: ${schedule_on_controllers}
+%{ if gateway_api_enabled }
   extraManifests:
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
@@ -20,6 +21,7 @@ cluster:
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+%{ endif }
   inlineManifests:
 %{if cilium_enabled}
     # Cilium Helm values

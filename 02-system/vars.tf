@@ -40,12 +40,17 @@ variable "cilium_enabled" {
 
 variable "cilium_version" {
   type    = string
-  default = "1.16.5"
+  default = "1.16.6"
 }
 
 variable "cilium_loadbalancer_ip" {
   type    = string
   default = "10.1.1.49"
+}
+
+variable "gateway_api_enabled" {
+  type    = bool
+  default = false
 }
 
 variable "gateway_api_version" {
