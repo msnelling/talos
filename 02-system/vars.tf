@@ -40,7 +40,7 @@ variable "cilium_enabled" {
 
 variable "cilium_version" {
   type    = string
-  default = "1.16.6"
+  default = "1.17.0"
 }
 
 variable "cilium_loadbalancer_ip" {

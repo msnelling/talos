@@ -54,7 +54,7 @@ l2announcements:
   enabled: true
 
 externalIPs:
-  enabled: true
+  enabled: false
 
 ciliumEndpointSlice:
   enabled: true
