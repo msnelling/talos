@@ -64,7 +64,7 @@ loadBalancer:
   algorithm: maglev
 
 gatewayAPI:
-  enabled: false
+  enabled: true
 
 operator:
   rollOutPods: true
