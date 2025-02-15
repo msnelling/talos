@@ -20,7 +20,7 @@ variable "talos_schedule_on_controllers" {
 
 variable "talos_kube_version" {
   type    = string
-  default = "1.32.0"
+  default = "1.32.2"
 }
 
 variable "talos_config_file" {
@@ -40,7 +40,7 @@ variable "cilium_enabled" {
 
 variable "cilium_version" {
   type    = string
-  default = "1.17.0"
+  default = "1.17.1"
 }
 
 variable "cilium_loadbalancer_ip" {
@@ -55,10 +55,10 @@ variable "gateway_api_enabled" {
 
 variable "gateway_api_version" {
   type    = string
-  default = "1.1.0"
+  default = "1.2.0"
 }
 
 variable "argocd_release" {
   type    = string
-  default = "2.13"
+  default = "2.14"
 }
