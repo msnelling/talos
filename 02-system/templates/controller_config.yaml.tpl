@@ -21,6 +21,8 @@ cluster:
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
     - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+    - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/experimental/gateway.networking.k8s.io_tcproutes.yaml
+    - https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v${gateway_api_version}/config/crd/experimental/gateway.networking.k8s.io_backendtlspolicies.yaml
 %{ endif }
   inlineManifests:
 %{if cilium_enabled}
