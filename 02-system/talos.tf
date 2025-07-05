@@ -32,7 +32,7 @@ locals {
       cilium_version = var.cilium_version
     })
 
-    argocd_install = templatefile("${path.module}/templates/argocd_install.yaml.tpl", {
+    bootstrap_job = templatefile("${path.module}/templates/bootstrap_job.yaml.tpl", {
       kube_version = var.talos_kube_version
     })
 

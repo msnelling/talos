@@ -13,9 +13,8 @@ cluster:
       - ${san}
 %{ endfor }
   allowSchedulingOnControlPlanes: ${schedule_on_controllers}
-  extraManifests:
-    - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 %{ if gateway_api_enabled }
+  extraManifests:
     - https://github.com/kubernetes-sigs/gateway-api/releases/download/v${gateway_api_version}/standard-install.yaml
 %{ if gateway_api_experimental }
     - https://github.com/kubernetes-sigs/gateway-api/releases/download/v${gateway_api_version}/experimental-install.yaml
@@ -39,10 +38,10 @@ cluster:
       contents: |
         ${indent(8, cilium_install)}
 %{ endif }
-    # Install ArgoCD
-    - name: argocd-install
+    # Bootstrap Job
+    - name: bootstrap-job
       contents: |
-        ${indent(8, argocd_install)}
+        ${indent(8, bootstrap_job)}
     # ArgoCD bootstrap project
     - name: argocd-bootstrap
       contents: |

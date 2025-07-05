@@ -9,7 +9,10 @@ tasks:
   up:
     desc: Brings up the entire system in order.
     cmds:
-      - task: "{{.STEPS}}"
+      - task: 00-bootstrap
+      - task: 01-proxmox
+      - task: 02-system
+      - task: 03-base
     vars:
       STEPS: >-
         00-bootstrap
@@ -20,13 +23,16 @@ tasks:
   teardown:
     desc: Tears down the entire system.
     cmds:
-      - task: "{{.STEPS}}"
-    vars:
-      STEPS: >-
-        03-base-teardown
-        02-system-teardown
-        01-proxmox-teardown
-        00-bootstrap-teardown
+      - task: 03-base-teardown
+      - task: 02-system-teardown
+      - task: 01-proxmox-teardown
+      - task: 00-bootstrap-teardown
+
+  rebuild:
+    desc: Rebuilds the entire system from scratch.
+    cmds:
+      - task: teardown
+      - task: up
 
   00-bootstrap:
     desc: Sets up the initial bootstrap configuration.
