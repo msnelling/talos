@@ -1,17 +1,27 @@
-data "cloudflare_api_token_permission_groups" "all" {}
+data "cloudflare_api_token_permission_groups_list" "all" {}
+
+locals {
+  # https://developers.cloudflare.com/fundamentals/api/reference/permissions/#zone-permissions
+  api_token_zone_permissions_groups_map = {
+    for perm in data.cloudflare_api_token_permission_groups_list.all.result :
+    perm.name => perm.id
+    if contains(perm.scopes, "com.cloudflare.api.account.zone")
+  }
+}
 
 resource "cloudflare_api_token" "cert_manager_issuer" {
   name = "Talos Certificate Issuer"
-
-  policy {
-    permission_groups = [
-      data.cloudflare_api_token_permission_groups.all.zone["DNS Write"],
-      data.cloudflare_api_token_permission_groups.all.zone["Zone Read"],
-    ]
+  status = "active"
+  policies = [{
+    effect = "allow"
     resources = {
-      "com.cloudflare.api.account.zone.*" = "*"
+      "com.cloudflare.api.account.${local.cloudflare_account_id}" = "*"
     }
-  }
+    permission_groups = [
+      { id = local.api_token_zone_permissions_groups_map["Zone Read"] },
+      { id = local.api_token_zone_permissions_groups_map["DNS Write"] },
+    ]
+  }]
 }
 
 resource "vault_generic_secret" "cert_manager_issuer_token" {
@@ -28,16 +38,17 @@ resource "random_bytes" "cloudflare_tunnel_password" {
 }
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "this" {
-  account_id = local.cloudflare_account_id
-  name       = "talos"
-  secret     = random_bytes.cloudflare_tunnel_password.base64
+  account_id    = local.cloudflare_account_id
+  name          = "talos"
+  config_src    = "cloudflare"
+  tunnel_secret = random_bytes.cloudflare_tunnel_password.base64
 }
 
 resource "vault_generic_secret" "tunnel_token" {
   path      = "secret/talos/cloudflare/tunnels/system"
   data_json = <<-EOT
     {
-      "tunnel-token": "${cloudflare_zero_trust_tunnel_cloudflared.this.tunnel_token}"
+      "tunnel-token": "${cloudflare_zero_trust_tunnel_cloudflared.this.tunnel_secret}"
     }
   EOT
 }

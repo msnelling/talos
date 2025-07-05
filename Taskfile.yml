@@ -1,0 +1,119 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  up:
+    desc: Brings up the entire system in order.
+    cmds:
+      - task: "{{.STEPS}}"
+    vars:
+      STEPS: >-
+        00-bootstrap
+        01-proxmox
+        02-system
+        03-base
+
+  teardown:
+    desc: Tears down the entire system.
+    cmds:
+      - task: "{{.STEPS}}"
+    vars:
+      STEPS: >-
+        03-base-teardown
+        02-system-teardown
+        01-proxmox-teardown
+        00-bootstrap-teardown
+
+  00-bootstrap:
+    desc: Sets up the initial bootstrap configuration.
+    cmds:
+      - task: terraform-up
+        vars:
+          DIR: 00-bootstrap
+
+  01-proxmox:
+    desc: Deploys the Proxmox-related configuration.
+    cmds:
+      - task: terraform-up
+        vars:
+          DIR: 01-proxmox
+
+  02-system:
+    desc: Applies the system-level configuration.
+    cmds:
+      - task: terraform-up
+        vars:
+          DIR: 02-system
+      - until talosctl health; do echo 'Waiting for system to be healthy...'; sleep 5; done
+
+  03-base:
+    desc: Deploys the base configuration for the cluster.
+    cmds:
+      - task: terraform-up
+        vars:
+          DIR: 03-base
+
+  00-bootstrap-teardown:
+    desc: Tears down the bootstrap configuration.
+    cmds:
+      - task: terraform-down
+        vars:
+          DIR: 00-bootstrap
+
+  01-proxmox-teardown:
+    desc: Tears down the Proxmox-related configuration.
+    cmds:
+      - task: terraform-down
+        vars:
+          DIR: 01-proxmox
+
+  02-system-teardown:
+    desc: Tears down the system-level configuration.
+    cmds:
+      - task: terraform-down
+        vars:
+          DIR: 02-system
+
+  03-base-teardown:
+    desc: Tears down the base configuration for the cluster.
+    cmds:
+      - task: terraform-down
+        vars:
+          DIR: 03-base
+
+  init-macos:
+    desc: Initialize a macOS workstation with dependencies
+    cmds:
+      - brew install {{.DEPS}} {{.CLI_ARGS}}
+    preconditions:
+      - sh: command -v brew
+        msg: |
+          Homebrew is not installed.
+    vars:
+      DEPS: >-
+        go-task/tap/go-task
+        kubectl
+        kustomize
+        helm
+        terraform
+        talosctl
+        k9s
+        yq
+        jq
+
+  terraform-up:
+    internal: true
+    dir: "{{.DIR}}"
+    cmds:
+      - terraform init
+      - terraform apply -auto-approve
+
+  terraform-down:
+    internal: true
+    dir: "{{.DIR}}"
+    cmds:
+      - terraform destroy -auto-approve

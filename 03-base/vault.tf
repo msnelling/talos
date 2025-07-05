@@ -8,7 +8,7 @@ resource "kubernetes_namespace_v1" "vault" {
   metadata {
     name = "vault"
     labels = {
-      "kubernetes.io/metadata.name" = "vault"
+      "kubernetes.io/metadata.name"        = "vault"
       "pod-security.kubernetes.io/enforce" = "privileged"
     }
     annotations = {

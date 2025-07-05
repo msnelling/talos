@@ -48,17 +48,22 @@ variable "cilium_loadbalancer_ip" {
   default = "10.1.1.49"
 }
 
-variable "gateway_api_enabled" {
+variable "cilium_gateway_api_enabled" {
   type    = bool
   default = false
 }
 
-variable "gateway_api_version" {
-  type    = string
-  default = "1.2.0"
+variable "gateway_api_install_crds" {
+  type    = bool
+  default = true
 }
 
-variable "argocd_release" {
+variable "gateway_api_experimental" {
+  type    = bool
+  default = true
+}
+
+variable "gateway_api_version" {
   type    = string
-  default = "3.0.9"
+  default = "1.2.1"
 }

@@ -13,6 +13,11 @@ variable "proxmox_iso_datastore" {
   default = "local"
 }
 
+variable "proxmox_iso_file" {
+  type    = string
+  default = null
+}
+
 variable "proxmox_vm_datastore" {
   type    = string
   default = "local-lvm"
@@ -48,5 +53,5 @@ variable "network_cidr_v4" {
 
 variable "talos_version" {
   type    = string
-  default = "v1.9.4"
+  default = "v1.10.5"
 }

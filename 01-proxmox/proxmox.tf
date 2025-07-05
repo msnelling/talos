@@ -1,4 +1,9 @@
+locals {
+  proxmox_image_file_id = var.proxmox_iso_file != null ? var.proxmox_iso_file : proxmox_virtual_environment_download_file.talos_nocloud_image[0].id
+}
+
 resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
+  count                   = var.proxmox_iso_file != null ? 0 : 1
   content_type            = "iso"
   datastore_id            = var.proxmox_iso_datastore
   node_name               = "pve"
@@ -6,6 +11,7 @@ resource "proxmox_virtual_environment_download_file" "talos_nocloud_image" {
   url                     = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/nocloud-amd64.raw.gz"
   decompression_algorithm = "gz"
   overwrite               = false
+  upload_timeout          = 3600
 }
 
 resource "proxmox_virtual_environment_vm" "node" {
@@ -51,7 +57,7 @@ resource "proxmox_virtual_environment_vm" "node" {
 
   disk {
     datastore_id = var.proxmox_vm_datastore
-    file_id      = proxmox_virtual_environment_download_file.talos_nocloud_image.id
+    file_id      = local.proxmox_image_file_id
     file_format  = "raw"
     interface    = "virtio0"
     size         = each.value.disk_gb

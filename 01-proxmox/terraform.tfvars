@@ -1,3 +1,6 @@
+// Comment this line to automatically download the image
+proxmox_iso_file = "local:iso/talos-v1.10.5-nocloud-amd64.img"
+
 proxmox_virtual_machines = {
   "Talos1" = {
     is_controller = true
@@ -9,12 +12,12 @@ proxmox_virtual_machines = {
     is_controller = false
     cpu_cores     = 24
     memory_mb     = 16384
-    disk_gb       = 200
+    disk_gb       = 400
   },
   "Talos3" = {
     is_controller = false
     cpu_cores     = 24
     memory_mb     = 16384
-    disk_gb       = 200
+    disk_gb       = 400
   },
 }

@@ -64,7 +64,7 @@ loadBalancer:
   algorithm: maglev
 
 gatewayAPI:
-  enabled: ${gateway_api_enabled}
+  enabled: false
 
 operator:
   rollOutPods: true
@@ -95,7 +95,7 @@ ingressController:
   loadbalancerMode: shared
   service:
     annotations:
-      lbipam.cilium.io/ips: ${loadbalancer_ip}
+      lbipam.cilium.io/ips: 10.1.1.49
 
 hubble:
   enabled: true

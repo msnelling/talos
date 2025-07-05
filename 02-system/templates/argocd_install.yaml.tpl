@@ -63,8 +63,10 @@ spec:
       serviceAccountName: argocd-install
       containers:
         - name: argocd-install
-          image: docker.io/bitnami/kubectl:latest
+          image: docker.io/alpine/k8s:${kube_version}
           command:
-            - "bin/bash"
-            - "-c"
-            - "kubectl apply -n argocd -f https://github.com/argoproj/argo-cd/raw/release-${argocd_release}/manifests/install.yaml"
+            - /bin/sh
+            - -c
+            - |
+              kustomize build --enable-helm https://github.com/msnelling/argocd-bootstrap.git//argocd | kubectl apply -n argocd -f -
+

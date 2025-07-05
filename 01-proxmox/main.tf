@@ -17,7 +17,7 @@ terraform {
     }
     talos = {
       source  = "siderolabs/talos"
-      version = "~> 0.7.1"
+      version = "~> 0.8"
     }
     netparse = {
       source = "gmeligio/netparse"
@@ -30,8 +30,8 @@ provider "proxmox" {
   api_token = "${local.vault_secret_proxmox_username}!${local.vault_secret_proxmox_token_name}=${local.vault_secret_proxmox_token}"
 
   ssh {
-    agent    = true
     username = "root"
+    password = local.vault_secret_proxmox_root_password
   }
 }
 

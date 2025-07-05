@@ -15,16 +15,17 @@ locals {
   }) }
 
   controller_machine_config = templatefile("${path.module}/templates/controller_config.yaml.tpl", {
-    vip_ipv4                = var.talos_controller_vip_ip
-    cert_sans               = local.cert_sans
-    schedule_on_controllers = var.talos_schedule_on_controllers
-    gateway_api_enabled     = var.gateway_api_enabled
-    gateway_api_version     = var.gateway_api_version
-    argocd_release          = var.argocd_release
-    cilium_enabled          = var.cilium_enabled
+    vip_ipv4                 = var.talos_controller_vip_ip
+    cert_sans                = local.cert_sans
+    schedule_on_controllers  = var.talos_schedule_on_controllers
+    gateway_api_enabled      = var.gateway_api_install_crds
+    gateway_api_experimental = var.gateway_api_install_crds && var.gateway_api_experimental
+    gateway_api_version      = var.gateway_api_version
+    cilium_enabled           = var.cilium_enabled
 
     cilium_values = templatefile("${path.module}/templates/cilium_values.yaml.tpl", {
-      loadbalancer_ip = var.cilium_loadbalancer_ip
+      loadbalancer_ip     = var.cilium_loadbalancer_ip
+      gateway_api_enabled = var.cilium_gateway_api_enabled
     })
 
     cilium_install = templatefile("${path.module}/templates/cilium_install.yaml.tpl", {
@@ -32,7 +33,7 @@ locals {
     })
 
     argocd_install = templatefile("${path.module}/templates/argocd_install.yaml.tpl", {
-      argocd_release = var.argocd_release
+      kube_version = var.talos_kube_version
     })
 
     argocd_bootstrap = templatefile("${path.module}/templates/argocd_bootstrap.yaml.tpl", {
