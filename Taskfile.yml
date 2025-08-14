@@ -1,6 +1,10 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: '3'
 
+vars:
+  # Default version to upgrade to - can be overridden with VERSION=x.x.x
+  TALOS_UPGRADE_VERSION: v1.10.6
+
 tasks:
   default:
     cmds:
@@ -123,3 +127,123 @@ tasks:
     dir: "{{.DIR}}"
     cmds:
       - terraform destroy -auto-approve
+
+  # Internal helper tasks
+  get-controller-ips:
+    silent: true
+    cmds:
+      - cd 01-proxmox && terraform output -json controller_nodes | jq -r 'to_entries[].value.address_ipv4'
+
+  get-worker-ips:
+    silent: true
+    cmds:
+      - cd 01-proxmox && terraform output -json worker_nodes | jq -r 'to_entries[].value.address_ipv4'
+
+  get-all-ips:
+    silent: true
+    cmds:
+      - task: get-controller-ips
+      - task: get-worker-ips
+
+  get-upgrade-image:
+    silent: true
+    cmds:
+      - |
+        VERSION="{{.VERSION | default .TALOS_UPGRADE_VERSION}}"
+        SCHEMATIC_ID=$(cd 01-proxmox && terraform output -raw talos_image_factory_schematic | cut -d'/' -f3 | cut -d':' -f1)
+        echo "factory.talos.dev/nocloud-installer/${SCHEMATIC_ID}:${VERSION}"
+
+  upgrade-node-from-ip:
+    requires:
+      vars: [IP]
+    cmds:
+      - task: upgrade-node
+        vars:
+          NODE: "{{.IP}}"
+
+  upgrade-node:
+    desc: "Upgrade a specific Talos node"
+    requires:
+      vars: [NODE]
+    cmds:
+      - echo "Upgrading node {{.NODE}}..."
+      - |
+        IMAGE=$(task get-upgrade-image)
+        echo "Using image: $IMAGE"
+        talosctl upgrade --nodes {{.NODE}} --image "$IMAGE"
+
+  upgrade-controllers:
+    desc: "Upgrade all controller nodes sequentially"
+    cmds:
+      - echo "Upgrading controller nodes..."
+      - |
+        task get-controller-ips | while read -r ip; do
+          echo "Upgrading controller node: $ip"
+          task upgrade-node-from-ip IP="$ip"
+        done
+
+  upgrade-workers:
+    desc: "Upgrade all worker nodes sequentially"
+    cmds:
+      - echo "Upgrading worker nodes..."
+      - |
+        task get-worker-ips | while read -r ip; do
+          echo "Upgrading worker node: $ip"
+          task upgrade-node-from-ip IP="$ip"
+        done
+
+  upgrade-all:
+    desc: "Upgrade all nodes sequentially (controllers first, then workers)"
+    cmds:
+      - task: upgrade-controllers
+      - task: upgrade-workers
+
+  check-upgrade-status:
+    desc: Check the current Talos version on all nodes
+    cmds:
+      - |
+        echo "🔍 Checking Talos versions on all nodes..."
+        cd 01-proxmox && terraform output -json | jq -r '
+          (.controller_nodes.value // {}) as $controllers |
+          (.worker_nodes.value // {}) as $workers |
+          ([$controllers, $workers] | add | to_entries[] | .value.address_ipv4)
+        ' | sort -u | while IFS= read -r node; do
+          if [ -n "$node" ]; then
+            echo "Checking node $node..."
+            talosctl version --nodes "$node" || echo "Failed to get version for $node"
+          fi
+        done
+
+  health-check:
+    desc: Perform comprehensive health check of the cluster
+    cmds:
+      - echo "🏥 Performing cluster health check..."
+      - echo "Checking Talos cluster health..."
+      - talosctl health
+      - echo "Checking Kubernetes cluster info..."
+      - kubectl cluster-info
+      - echo "Checking node status..."
+      - kubectl get nodes -o wide
+      - echo "Checking system pods..."
+      - kubectl get pods -n kube-system
+
+  check-versions:
+    desc: Check current and available Talos versions
+    cmds:
+      - |
+        echo "🔍 Current Talos version on nodes:"
+        cd 01-proxmox && terraform output -json | jq -r '
+          (.controller_nodes.value // {}) as $controllers |
+          (.worker_nodes.value // {}) as $workers |
+          ([$controllers, $workers] | add | to_entries[] | .value.address_ipv4)
+        ' | sort -u | while IFS= read -r node; do
+          if [ -n "$node" ]; then
+            echo "Node $node:"
+            talosctl version --nodes "$node" --short 2>/dev/null || echo "  Failed to get version"
+          fi
+        done
+      - echo ""
+      - echo "📦 Configured upgrade version{{":"}} {{.TALOS_UPGRADE_VERSION}}"
+      - echo ""
+      - echo "🌐 Latest Talos releases (check https://github.com/siderolabs/talos/releases):"
+      - curl -s https://api.github.com/repos/siderolabs/talos/releases | jq -r '.[0:5][] | "\(.tag_name) - \(.published_at | split("T")[0])"' || echo "Failed to fetch latest releases"

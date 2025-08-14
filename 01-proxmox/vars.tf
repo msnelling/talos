@@ -53,5 +53,5 @@ variable "network_cidr_v4" {
 
 variable "talos_version" {
   type    = string
-  default = "v1.10.5"
+  default = "v1.10.6"
 }
