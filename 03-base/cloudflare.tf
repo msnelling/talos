@@ -1,5 +1,10 @@
 data "cloudflare_api_token_permission_groups_list" "all" {}
 
+data "cloudflare_zero_trust_tunnel_cloudflared_token" "this" {
+  account_id = local.cloudflare_account_id
+  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.this.id
+}
+
 locals {
   # https://developers.cloudflare.com/fundamentals/api/reference/permissions/#zone-permissions
   api_token_zone_permissions_groups_map = {
@@ -10,7 +15,7 @@ locals {
 }
 
 resource "cloudflare_api_token" "cert_manager_issuer" {
-  name = "Talos Certificate Issuer"
+  name   = "Talos Certificate Issuer"
   status = "active"
   policies = [{
     effect = "allow"
@@ -48,7 +53,7 @@ resource "vault_generic_secret" "tunnel_token" {
   path      = "secret/talos/cloudflare/tunnels/system"
   data_json = <<-EOT
     {
-      "tunnel-token": "${cloudflare_zero_trust_tunnel_cloudflared.this.tunnel_secret}"
+      "tunnel-token": "${data.cloudflare_zero_trust_tunnel_cloudflared_token.this.token}"
     }
   EOT
 }
